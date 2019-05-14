@@ -6,13 +6,19 @@ const REJECTED = Symbol('REJECTED')
 function noop() {
 }
 
+function collectChild(stepfather, father) {
+    stepfather.onResolve = father.onResolve
+    stepfather.onReject = father.onReject
+    stepfather._nextPromise = father._nextPromise
+}
+
 class MyPromise {
     constructor(executer) {
         this._state = PADDING
-        this.onResolve
-        this.onReject
-        this._nextPromise
-        this._value
+        this.onResolve = undefined
+        this.onReject = undefined
+        this._nextPromise = undefined
+        this._value = undefined
 
         executer(this.resolve.bind(this), this.reject.bind(this))
     }
@@ -29,10 +35,7 @@ class MyPromise {
                     // console.log('p', this)  //p
                     // console.log('p1',this._nextPromise)
                     // console.log('p2', this._nextPromise._nextPromise)
-                    this._value.onResolve = this._nextPromise.onResolve
-                    this._value.onReject = this._nextPromise.onReject
-                    this._value._nextPromise = this._nextPromise._nextPromise
-
+                    collectChild(this._value, this._nextPromise)
                 } else {
                     this._nextPromise.resolve(this._value)
                 }
@@ -52,10 +55,12 @@ class MyPromise {
     }
 
     then(onResolve, onReject) {
-        this.onResolve = onResolve ? onResolve : noop
-        this.onReject = onReject ? onReject : noop
-
-        this._nextPromise = new MyPromise(noop)
+        let father = {
+            onResolve: onResolve ? onResolve : noop,
+            onReject: onReject ? onReject : noop,
+            _nextPromise: new MyPromise(noop)
+        }
+        collectChild(this, father)
         return this._nextPromise
     }
 }
