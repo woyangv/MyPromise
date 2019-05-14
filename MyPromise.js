@@ -21,11 +21,7 @@ class MyPromise {
             if (!this._nextPromise) return
             if (this._state === PADDING) {
                 this._state = FULFILLED
-                if (this.onResolve) {
-                    this._value = this.onResolve(value)
-                } else {
-                    console.log(this)
-                }
+                this._value = this.onResolve(value)
 
                 if (this._value instanceof MyPromise) {
                     // console.log('rp1', this._value) // rp1
