@@ -1,6 +1,6 @@
-const PADDING = Symbol()
-const FULFILLED = Symbol()
-const REJECTED = Symbol()
+const PADDING = Symbol('PADDING')
+const FULFILLED = Symbol('FULFILLED')
+const REJECTED = Symbol('REJECTED')
 
 function noop() {
 }
@@ -12,15 +12,8 @@ class MyPromise {
         this.onReject
         this._nextPromise
         this._value
-        this._executer = executer
 
-        if (this._state === PADDING) {
-            this.handle(this)
-        }
-    }
-
-    handle(self) {
-        this._executer(this.resolve.bind(self), this.reject.bind(self))
+        executer(this.resolve.bind(this), this.reject.bind(this))
     }
 
     resolve(value) {
@@ -28,17 +21,23 @@ class MyPromise {
             if (!this._nextPromise) return
             if (this._state === PADDING) {
                 this._state = FULFILLED
-                this._value = this.onResolve(value)
-
-                if (this._value === undefined) {
-                    if (this._nextPromise._nextPromise) {
-                        this._nextPromise.onResolve()
-                    }
-                } else if (this._value instanceof MyPromise) {
-                    this._nextPromise._executer = this._value._executer
-                    this._nextPromise.handle(this._nextPromise)
+                if (this.onResolve) {
+                    this._value = this.onResolve(value)
                 } else {
-                    this._nextPromise.onResolve(this._value)
+                    console.log(this)
+                }
+
+                if (this._value instanceof MyPromise) {
+                    // console.log('rp1', this._value) // rp1
+                    // console.log('p', this)  //p
+                    // console.log('p1',this._nextPromise)
+                    // console.log('p2', this._nextPromise._nextPromise)
+                    this._value.onResolve = this._nextPromise.onResolve
+                    this._value.onReject = this._nextPromise.onReject
+                    this._value._nextPromise = this._nextPromise._nextPromise
+
+                } else {
+                    this._nextPromise.resolve(this._value)
                 }
             }
         })
@@ -60,10 +59,8 @@ class MyPromise {
         this.onReject = onReject ? onReject : noop
 
         this._nextPromise = new MyPromise(noop)
-        this._nextPromise.onResolve = onResolve ? onResolve : noop
-        this._nextPromise.onReject = onReject ? onReject : noop
         return this._nextPromise
     }
 }
 
-// module.exports = MyPromise
+module.exports = MyPromise
