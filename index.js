@@ -12,7 +12,9 @@ p  //p
     .then(function (value) {  //p1
         console.log(value)
         return new MyPromise(function (resolve, reject) {  //rp
-            resolve(201)
+            setTimeout(function () {
+                resolve(201)
+            }, 3000)
         })
             .then(function (value) {  //rp1
                 console.log('in', value)
@@ -21,16 +23,7 @@ p  //p
     })
     .then(function (value) {  //p2
         console.log('a', value)
-        return new MyPromise(function (resolve, reject) {
-            setTimeout(function () {
-                resolve(202)
-            }, 1000)
-        }).then(function (value) {
-            console.log('qqq',value)
-        })
-    })
-    .then(function (value) {
-        console.log(value)
+
     })
 
 

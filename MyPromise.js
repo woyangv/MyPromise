@@ -1,3 +1,4 @@
+const asap = require('asap')
 const PADDING = Symbol('PADDING')
 const FULFILLED = Symbol('FULFILLED')
 const REJECTED = Symbol('REJECTED')
@@ -17,7 +18,7 @@ class MyPromise {
     }
 
     resolve(value) {
-        setTimeout(() => {
+        asap(() => {
             if (!this._nextPromise) return
             if (this._state === PADDING) {
                 this._state = FULFILLED
@@ -41,7 +42,7 @@ class MyPromise {
     }
 
     reject(err) {
-        setTimeout(() => {
+        asap(() => {
             if (this._state === PADDING) {
                 this._state = REJECTED
                 this.onReject(err)
