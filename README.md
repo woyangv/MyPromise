@@ -1,0 +1,2 @@
+# MyPromise
+A simple implementation
